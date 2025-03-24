@@ -14,14 +14,16 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "QuickCreate",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "qc",
+	Short: "Quickly scaffold frontend/backend projects and deployments with one command",
+	Long: `QuickCreate CLI
+	A fast, template based project bootstrapper for React, Go, Next.js and more
+	
+	Examples:
+		qc create react-app-js --name <project_name>
+		qc create react-app-ts --name <project_name>
+		
+		use "qc help <command>" for more help with a specific command`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

@@ -67,6 +67,5 @@ func init() {
 	// is called directly, e.g.:
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	rootCmd.AddCommand(createCmd)
 	createCmd.Flags().StringVarP(&projectName, "name", "n", "", "Name of the project folder")
 }
