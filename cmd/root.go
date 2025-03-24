@@ -20,8 +20,8 @@ var rootCmd = &cobra.Command{
 	A fast, template based project bootstrapper for React, Go, Next.js and more
 	
 	Examples:
-		qc create react-app-js --name <project_name>
-		qc create react-app-ts --name <project_name>
+		qc create react-js --name <project_name>
+		qc create react-ts --name <project_name>
 		
 		use "qc help <command>" for more help with a specific command`,
 	// Uncomment the following line if your bare application

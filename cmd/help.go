@@ -55,10 +55,12 @@ func printCreateHelp() {
 		qc create <template_name> --name or -n <project_name> [--path ./mydir]
 		
 	Templates:
-		react-js       ->   React + Vite (JS)
-		react-ts       ->   React + Vite (TS)
-		go-api		   ->   Basic Golang Backend
-		next-app	   ->   Next.js Fullstack App
+		react-js             ->   React + Vite (JS)
+		react-ts             ->   React + Vite (TS)
+		react-js-tailwind    ->   React + Vite (JS) + Tailwind
+		react-ts-tailwind    ->   React + Vite (TS) + Tailwind
+		go-api		         ->   Basic Golang Backend
+		next-app	         ->   Next.js Fullstack App
 
 		Examples:
 			qc create react-ts  --name dashboard
