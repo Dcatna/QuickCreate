@@ -41,7 +41,7 @@ func printGeneralHelp() {
 		
 		Examples:
 			qc help create
-			qc create react-app-js
+			qc create react-js
 	`)
 }
 
@@ -55,13 +55,13 @@ func printCreateHelp() {
 		qc create <template_name> --name or -n <project_name> [--path ./mydir]
 		
 	Templates:
-		react-app-js   ->   React + Vite (JS)
-		react-app-ts   ->   React + Vite (TS)
+		react-js       ->   React + Vite (JS)
+		react-ts       ->   React + Vite (TS)
 		go-api		   ->   Basic Golang Backend
 		next-app	   ->   Next.js Fullstack App
 
 		Examples:
-			qc create react-app-ts  --name dashboard
+			qc create react-ts  --name dashboard
 			qc create go-api --name api --path ./apps
 		`)
 }

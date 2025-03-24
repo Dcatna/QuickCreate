@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,7 @@ var projectName string
 var createCmd = &cobra.Command{
 	Use:   "create [template]",
 	Short: "Create a new project using a predefined template",
-	Long: `Scaffold a project from a built in template like react-app-js or react-app-ts`,
+	Long: `Scaffold a project from a built in template like react-js or react-ts`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("create called")
@@ -31,14 +32,73 @@ var createCmd = &cobra.Command{
 		fmt.Printf("Creating %s using template %s\n", projectName, template)
 
 		switch template {
-		case "react-app-js":
-			runCommand("npm", "create", "vite@latest", projectName, "--", "--template", "react")
-		case "react-app-ts":
-			runCommand("npm", "create", "vite@latest", projectName, "--", "--template", "react-ts")
+			case "react-js":
+				fmt.Println("Creating React with JavaScript project")
+				runCommand("npm", "create", "vite@latest", projectName, "--", "--template", "react")
 
-		default:
-			fmt.Println("Unknown template, do --help for prefdefined templates")
-		}
+			case "react-ts":
+				fmt.Println("Creating React with TypeScript project")
+				runCommand("npm", "create", "vite@latest", projectName, "--", "--template", "react-ts")
+
+			case"react-js-tailwind":
+				fmt.Println("Creating React + JavaScript + Tailwind project")
+				runCommand("npm", "create", "vite@latest", projectName, "--", "--template", "react")
+				tailwindInstall := exec.Command("npm", "install", "-n", "postcss", "autoprefixer")
+				tailwindInstall.Dir = projectName
+				tailwindInstall.Stderr = os.Stderr
+				tailwindInstall.Stdin = os.Stdin
+				tailwindInstall.Stdout = os.Stdout
+				installErr := tailwindInstall.Run()
+
+				if (installErr != nil) {
+					fmt.Printf("Command failed with %v\n", installErr)
+				}
+
+				tailwindInit := exec.Command("npx", "tailwindcss", "init", "-p")
+				tailwindInit.Dir = projectName
+				tailwindInit.Stderr = os.Stderr
+				tailwindInit.Stdin = os.Stdin
+				tailwindInit.Stdout = os.Stdout
+				initErr := tailwindInit.Run()
+
+				if(initErr != nil) {
+					fmt.Printf("Command failed with %v\n", initErr)
+				}
+				updateTailwindFiles(projectName)
+
+
+			case"react-ts-tailwind":
+				fmt.Println("Creating React + TypeScript + Tailwind project")
+				runCommand("npm", "create", "vite@latest", projectName, "--", "--template", "react-ts")
+				tailwindInstall := exec.Command("npm", "install", "-n", "postcss", "autoprefixer")
+				tailwindInstall.Dir = projectName
+				tailwindInstall.Stderr = os.Stderr
+				tailwindInstall.Stdin = os.Stdin
+				tailwindInstall.Stdout = os.Stdout
+				installErr := tailwindInstall.Run()
+
+				if (installErr != nil) {
+					fmt.Printf("Command failed with %v\n", installErr)
+				}
+
+				tailwindInit := exec.Command("npx", "tailwindcss", "init", "-p")
+				tailwindInit.Dir = projectName
+				tailwindInit.Stderr = os.Stderr
+				tailwindInit.Stdin = os.Stdin
+				tailwindInit.Stdout = os.Stdout
+				initErr := tailwindInit.Run()
+
+				if(initErr != nil) {
+					fmt.Printf("Command failed with %v\n", initErr)
+				}
+				updateTailwindFiles(projectName)
+
+			case "go-api":
+				fmt.Println("Creating go project... not done yet")
+
+			default:
+				fmt.Println("Unknown template, do --help for prefdefined templates")
+			}
 	},
 }
 
@@ -52,6 +112,30 @@ func runCommand(name string, args ...string) {
 	if err != nil {
 		fmt.Printf("Command failed %v\n", err)
 	}
+}
+
+func updateTailwindFiles(projectName string) {
+	tailwindConfig := filepath.Join(projectName, "tailwind.config.js")
+	indexCSS := filepath.Join(projectName, "src", "index.css")
+
+	tailwindConfigContent :=  `
+	/** @type {import('tailwindcss').Config} */
+	module.exports = {
+	  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+	  theme: {
+		extend: {},
+	  },
+	  plugins: [],
+	}`
+
+	os.WriteFile(tailwindConfig, []byte(tailwindConfigContent), 0644)
+
+	indexCSSContent := `
+	@tailwind base;
+	@tailwind components;
+	@tailwind utilities;`
+
+	os.WriteFile(indexCSS, []byte(indexCSSContent), 0644)
 }
 
 func init() {
