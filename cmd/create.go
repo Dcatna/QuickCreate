@@ -43,74 +43,33 @@ var createCmd = &cobra.Command{
 		switch template {
 		case "react-js":
 			fmt.Println("Creating React with JavaScript project")
-			runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react")
+			createReact(false, projectPath, projectName)
 
 		case "react-ts":
 			fmt.Println("Creating React with TypeScript project")
-			runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react-ts")
+			createReact(true, projectPath, projectName)
 
 		case "react-js-tailwind":
 			fmt.Println("Creating React + JavaScript + Tailwind project")
-			runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react")
-			tailwindInstall := exec.Command("npm", "install", "-D", "tailwindcss", "tailwindcss-cli", "postcss", "autoprefixer")
-			tailwindInstall.Dir = projectName
-			tailwindInstall.Stderr = os.Stderr
-			tailwindInstall.Stdin = os.Stdin
-			tailwindInstall.Stdout = os.Stdout
-			installErr := tailwindInstall.Run()
-
-			if installErr != nil {
-				fmt.Printf("Command failed with %v\n", installErr)
-			}
-
-			tailwindInit := exec.Command(filepath.Join(fullPath, "node_modules", ".bin", "tailwindcss-cli.cmd"), "init", "-p")
-			tailwindInit.Dir = projectName
-			tailwindInit.Stderr = os.Stderr
-			tailwindInit.Stdin = os.Stdin
-			tailwindInit.Stdout = os.Stdout
-			initErr := tailwindInit.Run()
-
-			if initErr != nil {
-				fmt.Printf("Command failed with %v\n", initErr)
-			}
-			updateTailwindFiles(fullPath)
+			createReact(false, projectPath, projectName)
+			addTailwind(fullPath)
 
 		case "react-ts-tailwind":
 			fmt.Println("Creating React + TypeScript + Tailwind project")
-			runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react-ts")
+			createReact(true, projectPath, projectName)
+			addTailwind(fullPath)
 
-			npmInstall := exec.Command("npm", "install")
-			npmInstall.Dir = fullPath
-			npmInstall.Stdout = os.Stdout
-			npmInstall.Stderr = os.Stderr
-			npmInstall.Stdin = os.Stdin
-			if err := npmInstall.Run(); err != nil {
-				fmt.Printf("npm install failed: %v\n", err)
-				return
-			}
+		case "react-js-tailwind-supa":
+			fmt.Println("Createing React + JavaScript + Tailwind + Supabase project")
+			createReact(false, projectPath, projectName)
+			addTailwind(fullPath)
+			addSupabase(projectPath, projectName)
 
-			tailwindInstall := exec.Command("npm", "install", "-D", "tailwindcss", "tailwindcss-cli", "postcss", "autoprefixer")
-			tailwindInstall.Dir = fullPath
-			tailwindInstall.Stderr = os.Stderr
-			tailwindInstall.Stdin = os.Stdin
-			tailwindInstall.Stdout = os.Stdout
-			installErr := tailwindInstall.Run()
-
-			if installErr != nil {
-				fmt.Printf("Command failed with %v\n", installErr)
-			}
-
-			tailwindInit := exec.Command(filepath.Join(fullPath, "node_modules", ".bin", "tailwindcss-cli.cmd"), "init", "-p")
-			tailwindInit.Dir = fullPath
-			tailwindInit.Stderr = os.Stderr
-			tailwindInit.Stdin = os.Stdin
-			tailwindInit.Stdout = os.Stdout
-			initErr := tailwindInit.Run()
-
-			if initErr != nil {
-				fmt.Printf("Command failed with %v\n", initErr)
-			}
-			updateTailwindFiles(fullPath)
+		case "react-ts-tailwind-supa":
+			fmt.Println("Createing React + TypeScript + Tailwind + Supabase project")
+			createReact(true, projectPath, projectName)
+			addTailwind(fullPath)
+			addSupabase(projectPath, projectName)
 
 		case "go-api":
 			fmt.Println("Creating go project... not done yet")
@@ -137,6 +96,78 @@ var createCmd = &cobra.Command{
 			fmt.Println("Unknown template, do --help for prefdefined templates")
 		}
 	},
+}
+
+func createReact(ts bool, projectPath string, projectName string) {
+	if !ts {
+		runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react")
+	} else {
+		runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react-ts")
+	}
+}
+
+func addTailwind(fullPath string) {
+
+	npmInstall := exec.Command("npm", "install")
+	npmInstall.Dir = fullPath
+	npmInstall.Stdout = os.Stdout
+	npmInstall.Stderr = os.Stderr
+	npmInstall.Stdin = os.Stdin
+	if err := npmInstall.Run(); err != nil {
+		fmt.Printf("npm install failed: %v\n", err)
+		return
+	}
+
+	tailwindInstall := exec.Command("npm", "install", "-D", "tailwindcss", "tailwindcss-cli", "postcss", "autoprefixer")
+	tailwindInstall.Dir = fullPath
+	tailwindInstall.Stderr = os.Stderr
+	tailwindInstall.Stdin = os.Stdin
+	tailwindInstall.Stdout = os.Stdout
+	installErr := tailwindInstall.Run()
+
+	if installErr != nil {
+		fmt.Printf("Command failed with %v\n", installErr)
+	}
+
+	tailwindInit := exec.Command(filepath.Join(fullPath, "node_modules", ".bin", "tailwindcss-cli.cmd"), "init", "-p")
+	tailwindInit.Dir = fullPath
+	tailwindInit.Stderr = os.Stderr
+	tailwindInit.Stdin = os.Stdin
+	tailwindInit.Stdout = os.Stdout
+	initErr := tailwindInit.Run()
+
+	if initErr != nil {
+		fmt.Printf("Command failed with %v\n", initErr)
+	}
+	updateTailwindFiles(fullPath)
+}
+
+func addSupabase(projectPath string, projectName string) {
+	cmd := exec.Command("npm", "install", "@supabase/supabase-js")
+	cmd.Dir = filepath.Join(projectPath, projectName)
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("error installing Supabase %e\n", err)
+	}
+
+	supaabaseLocation := filepath.Join(projectPath, projectName, "src", "data", "supabaseclient.js")
+	if err := os.Mkdir(supaabaseLocation, os.ModePerm); err != nil {
+		log.Fatalf("Error creating folder %e\n", err)
+
+	}
+	supabaseContent :=
+		`
+	import { createClient } from '@supabase/supabase-js'
+	export const supabase = createClient(
+		'<project_url>', 
+		'<public_key>'
+
+	)`
+	os.WriteFile(supaabaseLocation, []byte(supabaseContent), 0644)
+
 }
 
 func runCommand(path string, name string, args ...string) {
