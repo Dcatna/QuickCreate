@@ -9,8 +9,8 @@ Create production-ready project scaffolds like React apps, Go APIs, or Next.js p
 ## 🚀 Features
 
 - Preconfigured templates for:
-  - `react-app-js` (React + Vite + JavaScript)
-  - `react-app-ts` (React + Vite + TypeScript)
+  - `react-js` (React + Vite + JavaScript)
+  - `react-ts` (React + Vite + TypeScript)
   - `react-ts-tailwind-supa` (React + TS + Tailwind + Supabase client)
   - `next-app` (Next.js + TypeScript)
 - Customizable output path (`--path`)
