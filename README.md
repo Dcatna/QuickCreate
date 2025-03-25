@@ -22,7 +22,5 @@ Create production-ready project scaffolds like React apps, Go APIs, or Next.js p
 
 ## 📦 Installation
 
-### 1. Clone the repo:
-```bash
-git clone https://github.com/dcatna/QuickCreate.git
-cd QuickCreate
+### 1. Download the Release:
+### 2. Add the .exe to your system variables
