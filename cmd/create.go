@@ -63,16 +63,16 @@ var createCmd = &cobra.Command{
 			fmt.Println("Createing React + JavaScript + Tailwind + Supabase project")
 			createReact(false, projectPath, projectName)
 			addTailwind(fullPath)
-			addSupabase(projectPath, projectName)
+			addSupabase(false, projectPath, projectName)
 
 		case "react-ts-tailwind-supa":
 			fmt.Println("Createing React + TypeScript + Tailwind + Supabase project")
 			createReact(true, projectPath, projectName)
 			addTailwind(fullPath)
-			addSupabase(projectPath, projectName)
+			addSupabase(true, projectPath, projectName)
 
 		case "go-api":
-			fmt.Println("Creating go project... not done yet")
+			fmt.Println("Not implemented")
 
 		case "next-js":
 			fmt.Println("Creating Next.js project")
@@ -142,32 +142,40 @@ func addTailwind(fullPath string) {
 	updateTailwindFiles(fullPath)
 }
 
-func addSupabase(projectPath string, projectName string) {
+func addSupabase(ts bool, projectPath string, projectName string) {
+	projectDir := filepath.Join(projectPath, projectName)
+	srcDataDir := filepath.Join(projectDir, "src", "data")
+	var supabaseFile string
+
+	if ts {
+		supabaseFile = filepath.Join(srcDataDir, "supabaseclient.ts")
+	} else {
+		supabaseFile = filepath.Join(srcDataDir, "supabaseclient.js")
+	}
+
 	cmd := exec.Command("npm", "install", "@supabase/supabase-js")
-	cmd.Dir = filepath.Join(projectPath, projectName)
+	cmd.Dir = projectDir
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
 
 	if err := cmd.Run(); err != nil {
-		log.Fatalf("error installing Supabase %e\n", err)
+		log.Fatalf("error installing Supabase: %v\n", err)
 	}
 
-	supaabaseLocation := filepath.Join(projectPath, projectName, "src", "data", "supabaseclient.js")
-	if err := os.Mkdir(supaabaseLocation, os.ModePerm); err != nil {
-		log.Fatalf("Error creating folder %e\n", err)
-
+	if err := os.MkdirAll(srcDataDir, os.ModePerm); err != nil {
+		log.Fatalf("Error creating folders: %v\n", err)
 	}
-	supabaseContent :=
-		`
+
+	supabaseContent := `
 	import { createClient } from '@supabase/supabase-js'
 	export const supabase = createClient(
 		'<project_url>', 
 		'<public_key>'
-
 	)`
-	os.WriteFile(supaabaseLocation, []byte(supabaseContent), 0644)
-
+	if err := os.WriteFile(supabaseFile, []byte(supabaseContent), 0644); err != nil {
+		log.Fatalf("Error writing Supabase client file: %v\n", err)
+	}
 }
 
 func runCommand(path string, name string, args ...string) {
