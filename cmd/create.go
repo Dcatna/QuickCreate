@@ -43,16 +43,16 @@ var createCmd = &cobra.Command{
 		switch template {
 		case "react-js":
 			fmt.Println("Creating React with JavaScript project")
-			runCommand("npm", "create", "vite@latest", fullPath, "--", "--template", "react")
+			runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react")
 
 		case "react-ts":
 			fmt.Println("Creating React with TypeScript project")
-			runCommand("npm", "create", "vite@latest", fullPath, "--", "--template", "react-ts")
+			runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react-ts")
 
 		case "react-js-tailwind":
 			fmt.Println("Creating React + JavaScript + Tailwind project")
-			runCommand("npm", "create", "vite@latest", fullPath, "--", "--template", "react")
-			tailwindInstall := exec.Command("npm", "install", "-n", "postcss", "autoprefixer")
+			runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react")
+			tailwindInstall := exec.Command("npm", "install", "-D", "tailwindcss", "tailwindcss-cli", "postcss", "autoprefixer")
 			tailwindInstall.Dir = projectName
 			tailwindInstall.Stderr = os.Stderr
 			tailwindInstall.Stdin = os.Stdin
@@ -63,7 +63,7 @@ var createCmd = &cobra.Command{
 				fmt.Printf("Command failed with %v\n", installErr)
 			}
 
-			tailwindInit := exec.Command("npx", "tailwindcss", "init", "-p")
+			tailwindInit := exec.Command(filepath.Join(fullPath, "node_modules", ".bin", "tailwindcss-cli.cmd"), "init", "-p")
 			tailwindInit.Dir = projectName
 			tailwindInit.Stderr = os.Stderr
 			tailwindInit.Stdin = os.Stdin
@@ -77,9 +77,20 @@ var createCmd = &cobra.Command{
 
 		case "react-ts-tailwind":
 			fmt.Println("Creating React + TypeScript + Tailwind project")
-			runCommand("npm", "create", "vite@latest", fullPath, "--", "--template", "react-ts")
-			tailwindInstall := exec.Command("npm", "install", "-n", "postcss", "autoprefixer")
-			tailwindInstall.Dir = projectName
+			runCommand(projectPath, "npm", "create", "vite@latest", projectName, "--", "--template", "react-ts")
+
+			npmInstall := exec.Command("npm", "install")
+			npmInstall.Dir = fullPath
+			npmInstall.Stdout = os.Stdout
+			npmInstall.Stderr = os.Stderr
+			npmInstall.Stdin = os.Stdin
+			if err := npmInstall.Run(); err != nil {
+				fmt.Printf("npm install failed: %v\n", err)
+				return
+			}
+
+			tailwindInstall := exec.Command("npm", "install", "-D", "tailwindcss", "tailwindcss-cli", "postcss", "autoprefixer")
+			tailwindInstall.Dir = fullPath
 			tailwindInstall.Stderr = os.Stderr
 			tailwindInstall.Stdin = os.Stdin
 			tailwindInstall.Stdout = os.Stdout
@@ -89,8 +100,8 @@ var createCmd = &cobra.Command{
 				fmt.Printf("Command failed with %v\n", installErr)
 			}
 
-			tailwindInit := exec.Command("npx", "tailwindcss", "init", "-p")
-			tailwindInit.Dir = projectName
+			tailwindInit := exec.Command(filepath.Join(fullPath, "node_modules", ".bin", "tailwindcss-cli.cmd"), "init", "-p")
+			tailwindInit.Dir = fullPath
 			tailwindInit.Stderr = os.Stderr
 			tailwindInit.Stdin = os.Stdin
 			tailwindInit.Stdout = os.Stdout
@@ -107,7 +118,7 @@ var createCmd = &cobra.Command{
 		case "next-js":
 			fmt.Println("Creating Next.js project")
 
-			if err := os.Mkdir(projectPath, os.ModePerm) ; err != nil {
+			if err := os.Mkdir(projectPath, os.ModePerm); err != nil {
 				log.Fatalf("Error creating folder %e\n", err)
 
 			}
@@ -118,10 +129,9 @@ var createCmd = &cobra.Command{
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
 
-			if err := cmd.Run() ; err != nil {
+			if err := cmd.Run(); err != nil {
 				log.Fatalf("Error creating next-js app %e\n", err)
 			}
-
 
 		default:
 			fmt.Println("Unknown template, do --help for prefdefined templates")
@@ -129,8 +139,9 @@ var createCmd = &cobra.Command{
 	},
 }
 
-func runCommand(name string, args ...string) {
+func runCommand(path string, name string, args ...string) {
 	cmd := exec.Command(name, args...)
+	cmd.Dir = path
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
